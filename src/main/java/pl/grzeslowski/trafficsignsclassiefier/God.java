@@ -7,9 +7,7 @@ import org.datavec.api.split.FileSplit;
 import org.datavec.api.split.InputSplit;
 import org.datavec.image.loader.NativeImageLoader;
 import org.datavec.image.recordreader.ImageRecordReader;
-import org.datavec.image.transform.ImageTransform;
-import org.datavec.image.transform.MultiImageTransform;
-import org.datavec.image.transform.ShowImageTransform;
+import org.datavec.image.transform.*;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -111,10 +109,9 @@ public class God {
         //Often there is a need to transforming images to artificially increase the size of the dataset
         //DataVec has built in powerful features from OpenCV
         //You can chain transformations as shown below, write your own classes that will say detect a face and crop to size
-        /*ImageTransform transform = new MultiImageTransform(randNumGen,
-            new CropImageTransform(10), new FlipImageTransform(),
-            new ScaleImageTransform(10), new WarpImageTransform(10));
-            */
+//        ImageTransform transform = new MultiImageTransform(new Random(1337),
+//            new CropImageTransform(10), new FlipImageTransform(),
+//            new ScaleImageTransform(10), new WarpImageTransform(10));
 
 
         // Neural net
@@ -125,7 +122,7 @@ public class God {
                 .learningRate(learningRate)
                 .updater(Updater.NESTEROVS).momentum(0.9)
                 .list()
-                .layer(0, new DenseLayer.Builder().nIn(height * width).nOut(numHiddenNodes)
+                .layer(0, new DenseLayer.Builder().nIn(height * width * channels).nOut(numHiddenNodes)
                         .weightInit(WeightInit.XAVIER)
                         .activation("relu")
                         .build())
@@ -151,25 +148,16 @@ public class God {
         DataSetIterator trainIter = new RecordReaderDataSetIterator(recordReader, 10, 1, outputNum);
 //        trainIter.reset();
 
-
-        while (trainIter.hasNext()) {
-            DataSet ds = trainIter.next();
-
-            for (int n = 0; n < epochs; n++) {
-                model.fit(ds);
-            }
+        for (int n = 0; n < epochs; n++) {
+            model.fit(trainIter);
         }
-
-
-//        for (int n = 0; n < epochs; n++) {
-//            model.fit(trainIter);
-//        }
 
 
         System.out.println("Evaluate model....");
 
         //transform = new MultiImageTransform(randNumGen,new CropImageTransform(50), new ShowImageTransform("Display - after"));
         //recordReader.initialize(trainData,transform);
+        recordReader.reset();
         recordReader.initialize(testData);
         DataSetIterator testIter = new RecordReaderDataSetIterator(recordReader, 10, 1, outputNum);
         testIter.reset();
@@ -183,6 +171,7 @@ public class God {
 
             eval.eval(lables, predicted);
         }
+        System.out.println(eval.stats());
 
     }
 
