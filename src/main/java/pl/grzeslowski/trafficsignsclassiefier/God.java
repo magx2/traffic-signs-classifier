@@ -195,8 +195,19 @@ public class God {
             }
             checkArgument(sign.length() >= 2, "Sign = " + sign);
             final String type = sign.charAt(0) + "";
-            final String subType = sign.substring(1);
-            signs.add(new Sign(type, subType));
+            if(sign.contains(";")) {
+
+                // B33
+                final String[] secondPart = sign.substring(1).split(";");
+                final String subType = secondPart[0];
+                final int speed = Integer.parseInt(secondPart[1]);
+                signs.add(new B33Sign(type, subType, speed));
+            } else {
+
+                // regular sign
+                final String subType = sign.substring(1);
+                signs.add(new Sign(type, subType));
+            }
         }
 
         return new Example(photoFile, signs);
