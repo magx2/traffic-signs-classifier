@@ -173,10 +173,10 @@ public class God {
         while (testIter.hasNext()) {
             DataSet t = testIter.next();
             INDArray features = t.getFeatureMatrix();
-            INDArray lables = t.getLabels();
+            INDArray labels = t.getLabels();
             INDArray predicted = model.output(features, false);
 
-            eval.eval(lables, predicted);
+            eval.eval(labels, predicted);
         }
         System.out.println(eval.stats());
 
