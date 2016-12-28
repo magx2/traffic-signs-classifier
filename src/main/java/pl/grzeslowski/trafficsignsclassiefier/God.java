@@ -24,6 +24,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import pl.grzeslowski.trafficsignsclassiefier.labelgenerators.B33LabelGenerator;
 import pl.grzeslowski.trafficsignsclassiefier.labelgenerators.LabelGenerator;
 
 import java.io.File;
@@ -92,7 +93,12 @@ public class God {
         //You do not have to manually specify labels. This class (instantiated as below) will
         //parse the parent dir and use the name of the subdirectories as label/class names
         ParentPathLabelGenerator labelMakerOld = new ParentPathLabelGenerator();
-        PathLabelGenerator labelMaker = new LabelGenerator(signToFind, examples);
+        final PathLabelGenerator labelMaker;
+        if (signToFind instanceof B33Sign) {
+            labelMaker = new B33LabelGenerator(examples);
+        } else {
+            labelMaker = new LabelGenerator(signToFind, examples);
+        }
         //The balanced path filter gives you fine tune control of the min/max cases to load for each class
         //Below is a bare bones version. Refer to javadocs for details
         BalancedPathFilter pathFilter = new BalancedPathFilter(new Random(1337), allowedExtensions, labelMaker);
@@ -196,7 +202,7 @@ public class God {
             }
             checkArgument(sign.length() >= 2, "Sign = " + sign);
             final String type = sign.charAt(0) + "";
-            if(sign.contains(";")) {
+            if (sign.contains(";")) {
 
                 // B33
                 final String[] secondPart = sign.substring(1).split(";");
