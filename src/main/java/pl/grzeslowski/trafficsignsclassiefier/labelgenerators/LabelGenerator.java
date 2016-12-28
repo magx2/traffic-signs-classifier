@@ -1,9 +1,9 @@
-package pl.grzeslowski.trafficsignsclassiefier;
+package pl.grzeslowski.trafficsignsclassiefier.labelgenerators;
 
-import org.datavec.api.io.labels.PathLabelGenerator;
 import org.datavec.api.writable.BooleanWritable;
-import org.datavec.api.writable.Text;
 import org.datavec.api.writable.Writable;
+import pl.grzeslowski.trafficsignsclassiefier.Example;
+import pl.grzeslowski.trafficsignsclassiefier.Sign;
 
 import java.io.File;
 import java.net.URI;

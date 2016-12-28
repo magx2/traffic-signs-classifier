@@ -1,7 +1,9 @@
-package pl.grzeslowski.trafficsignsclassiefier;
+package pl.grzeslowski.trafficsignsclassiefier.labelgenerators;
 
 import org.datavec.api.writable.Text;
 import org.datavec.api.writable.Writable;
+import pl.grzeslowski.trafficsignsclassiefier.B33Sign;
+import pl.grzeslowski.trafficsignsclassiefier.Example;
 
 import java.util.Optional;
 import java.util.Set;
