@@ -9,26 +9,20 @@ import java.io.File;
 import java.net.URI;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class LabelGenerator implements PathLabelGenerator {
+public class LabelGenerator extends AbstractLabelGenerator {
     private final Sign sign;
     private Set<Example> examples;
 
     public LabelGenerator(Sign sign, Set<Example> examples) {
+        super(examples);
         this.sign = checkNotNull(sign);
-        this.examples = checkNotNull(examples);
-        checkArgument(examples.size() > 0);
     }
 
     @Override
     public Writable getLabelForPath(String path) {
-        final File file = new File(path);
-        final Example example = examples.stream()
-                .filter(e -> file.getName().equalsIgnoreCase(e.getPhotoFile().getName()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(String.format("Cannot find file with path %s in examples!", file.getAbsolutePath())));
+        final Example example = findExampleForPath(path);
         return new BooleanWritable(
                 example.getSigns().contains(sign)
         );

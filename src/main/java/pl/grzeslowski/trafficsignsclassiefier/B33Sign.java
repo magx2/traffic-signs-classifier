@@ -11,6 +11,10 @@ public class B33Sign extends Sign {
         this.speed = speed;
     }
 
+    public int getSpeed() {
+        return speed;
+    }
+
     @SuppressWarnings("SimplifiableIfStatement")
     @Override
     public boolean equals(Object o) {
