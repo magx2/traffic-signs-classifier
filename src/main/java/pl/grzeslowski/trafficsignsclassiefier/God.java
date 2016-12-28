@@ -50,6 +50,8 @@ public class God {
     private final double learningRate = 0.1;
     private final int numHiddenNodes = 100;
     private final int epochs = 10;
+    private final int cropImageVertical = (int) (width * .1);
+    private final int cropImageHorizontal = (int) (height * .1);
 
     public static void main(String[] args) throws Exception {
         final God god = new God();
@@ -145,38 +147,55 @@ public class God {
         model.init();
         model.setListeners(new ScoreIterationListener(10));  //Print score every 10 parameter updates
 
-        //You can use the ShowImageTransform to view your images
-        //Code below gives you a look before and after, for a side by side comparison
-        ImageTransform transform = new MultiImageTransform(new Random(1337), new ShowImageTransform("Display - before "));
+//        ImageTransform transform2 = new MultiImageTransform(new Random(1337),
+//            new CropImageTransform(10), new FlipImageTransform(),
+//            new ScaleImageTransform(10), new WarpImageTransform(10));
 
-        //Initialize the record reader with the train data and the transform chain
-        recordReader.initialize(trainData, transform);
-        //convert the record reader to an iterator for training - Refer to other examples for how to use an iterator
-        DataSetIterator trainIter = new RecordReaderDataSetIterator(recordReader, 10, 1, outputNum);
-//        trainIter.reset();
+        final ImageTransform[] transformations = new ImageTransform[] {
+                // no transformation
+                new MultiImageTransform(new Random(1337), new ShowImageTransform("Display - before ")),
+                // crop top
+                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), cropImageVertical, 0, 0, 0)),
+                // crop left
+                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, 0)),
+                // crop bottom
+                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), 0, 0, cropImageVertical, 0)),
+                // crop right
+                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), 0, 0, 0, cropImageHorizontal)),
+                // crop vertical
+                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), cropImageVertical, 0, cropImageVertical, 0)),
+                // crop horizontal
+                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, cropImageHorizontal)),
+                // crop all
+                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), cropImageVertical, cropImageHorizontal, cropImageVertical, cropImageHorizontal)),
+                // flip over Y-axis
+                new MultiImageTransform(new Random(1337), new FlipImageTransform(1))
+        };
 
-        for (int n = 0; n < epochs; n++) {
-            model.fit(trainIter);
+        for (ImageTransform transform: transformations) {
+            recordReader.initialize(trainData, transform);
+            DataSetIterator trainIter = new RecordReaderDataSetIterator(recordReader, 10, 1, outputNum);
+
+            for (int n = 0; n < epochs; n++) {
+                model.fit(trainIter);
+            }
+            recordReader.reset();
         }
 
-
         System.out.println("Evaluate model....");
-
-        //transform = new MultiImageTransform(randNumGen,new CropImageTransform(50), new ShowImageTransform("Display - after"));
-        //recordReader.initialize(trainData,transform);
-        recordReader.reset();
-        recordReader.initialize(testData);
-        DataSetIterator testIter = new RecordReaderDataSetIterator(recordReader, 10, 1, outputNum);
-        testIter.reset();
-
         Evaluation eval = new Evaluation(outputNum);
-        while (testIter.hasNext()) {
-            DataSet t = testIter.next();
-            INDArray features = t.getFeatureMatrix();
-            INDArray labels = t.getLabels();
-            INDArray predicted = model.output(features, false);
+        for (ImageTransform transform: transformations) {
+            recordReader.initialize(testData, transform);
+            DataSetIterator testIter = new RecordReaderDataSetIterator(recordReader, 10, 1, outputNum);
 
-            eval.eval(labels, predicted);
+            while (testIter.hasNext()) {
+                DataSet t = testIter.next();
+                INDArray features = t.getFeatureMatrix();
+                INDArray labels = t.getLabels();
+                INDArray predicted = model.output(features, false);
+
+                eval.eval(labels, predicted);
+            }
         }
         System.out.println(eval.stats());
 
