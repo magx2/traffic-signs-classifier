@@ -153,23 +153,23 @@ public class God {
 
         final ImageTransform[] transformations = new ImageTransform[] {
                 // no transformation
-                new MultiImageTransform(new Random(1337), new ShowImageTransform("Display - before ")),
+                new ShowImageTransform("Display - before "),
                 // crop top
-                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), cropImageVertical, 0, 0, 0)),
+                new CropImageTransform(new Random(1337), cropImageVertical, 0, 0, 0),
                 // crop left
-                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, 0)),
+                new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, 0),
                 // crop bottom
-                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), 0, 0, cropImageVertical, 0)),
+                new CropImageTransform(new Random(1337), 0, 0, cropImageVertical, 0),
                 // crop right
-                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), 0, 0, 0, cropImageHorizontal)),
+                new CropImageTransform(new Random(1337), 0, 0, 0, cropImageHorizontal),
                 // crop vertical
-                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), cropImageVertical, 0, cropImageVertical, 0)),
+                new CropImageTransform(new Random(1337), cropImageVertical, 0, cropImageVertical, 0),
                 // crop horizontal
-                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, cropImageHorizontal)),
+                new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, cropImageHorizontal),
                 // crop all
-                new MultiImageTransform(new Random(1337), new CropImageTransform(new Random(1337), cropImageVertical, cropImageHorizontal, cropImageVertical, cropImageHorizontal)),
+                new CropImageTransform(new Random(1337), cropImageVertical, cropImageHorizontal, cropImageVertical, cropImageHorizontal),
                 // flip over Y-axis
-                new MultiImageTransform(new Random(1337), new FlipImageTransform(1))
+                new FlipImageTransform(1)
         };
 
         for (ImageTransform transform: transformations) {
