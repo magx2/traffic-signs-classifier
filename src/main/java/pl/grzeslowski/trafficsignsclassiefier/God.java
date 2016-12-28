@@ -28,10 +28,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,13 +68,16 @@ public class God {
                         .distinct()
                         .collect(Collectors.joining(", ")));
         System.out.printf("Occurrences of each sign type %s%n",
-                examples.stream()
-                        .flatMap(e -> e.getSigns().stream())
-                        .collect(
-                                Collectors.groupingBy(
-                                        Function.identity(), Collectors.counting()
+                new TreeMap<>(
+                        examples.stream()
+                                .flatMap(e -> e.getSigns().stream())
+                                .map(Sign::signLabel)
+                                .collect(
+                                        Collectors.groupingBy(
+                                                Function.identity(), Collectors.counting()
+                                        )
                                 )
-                        ));
+                ));
 
         // DL4J - image pipeline
         // see: https://github.com/deeplearning4j/dl4j-examples/blob/master/dl4j-examples/src/main/java/org/deeplearning4j/examples/dataExamples/ImagePipelineExample.java

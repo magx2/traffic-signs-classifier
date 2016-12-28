@@ -1,8 +1,10 @@
 package pl.grzeslowski.trafficsignsclassiefier;
 
+import org.jetbrains.annotations.NotNull;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Sign {
+public class Sign implements Comparable<Sign> {
     private final String type;
     private final String subType;
 
@@ -37,8 +39,17 @@ public class Sign {
         return result;
     }
 
+    public String signLabel() {
+        return String.format("%s-%s", type, subType);
+    }
+
     @Override
     public String toString() {
-        return String.format("%s-%s", type, subType);
+        return signLabel();
+    }
+
+    @Override
+    public int compareTo(@NotNull Sign o) {
+        return signLabel().compareTo(o.signLabel());
     }
 }
