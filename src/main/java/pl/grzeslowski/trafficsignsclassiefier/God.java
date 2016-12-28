@@ -37,18 +37,18 @@ import java.util.stream.Stream;
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class God {
-    private String pathToData = "D:\\Programowanie\\deep_learning\\znaki_drogowe";
-    private String metaDataFileName = "traffic-signs.csv";
-    private String separator = ",";
-    private String[] allowedExtensions = NativeImageLoader.ALLOWED_FORMATS;
-    private int height = 170;
-    private int width = 300;
-    private int channels = 3;
-    private int outputNum = 2;
-    private Sign signToFind = new Sign("B", "36");
-    private double learningRate = 0.1;
-    private int numHiddenNodes = 100;
-    private int epochs = 10;
+    private final String pathToData = "D:\\Programowanie\\deep_learning\\znaki_drogowe";
+    private final String metaDataFileName = "traffic-signs.csv";
+    private final String separator = ",";
+    private final String[] allowedExtensions = NativeImageLoader.ALLOWED_FORMATS;
+    private final int height = 170;
+    private final int width = 300;
+    private final int channels = 3;
+    private final int outputNum = 2;
+    private final Sign signToFind = new Sign("B", "36");
+    private final double learningRate = 0.1;
+    private final int numHiddenNodes = 100;
+    private final int epochs = 10;
 
     public static void main(String[] args) throws Exception {
         final God god = new God();
