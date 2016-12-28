@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class LabelGenerator extends AbstractLabelGenerator {
     private final Sign sign;
-    private Set<Example> examples;
 
     public LabelGenerator(Sign sign, Set<Example> examples) {
         super(examples);
