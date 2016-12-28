@@ -197,7 +197,7 @@ public class God {
         final Set<Sign> signs = new HashSet<>();
         for (int i = 1; i < line.length; i++) {
             String sign = line[i];
-            if (sign.isEmpty()) {
+            if (sign.isEmpty()) { // TODO can be removed when CSV file will contain only data without description of signs
                 break;
             }
             checkArgument(sign.length() >= 2, "Sign = " + sign);
