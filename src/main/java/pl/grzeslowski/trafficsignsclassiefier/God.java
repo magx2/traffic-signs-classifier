@@ -8,6 +8,7 @@ import org.datavec.api.split.InputSplit;
 import org.datavec.image.loader.NativeImageLoader;
 import org.datavec.image.recordreader.ImageRecordReader;
 import org.datavec.image.transform.*;
+import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -19,7 +20,9 @@ import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.ui.api.UIServer;
+import org.deeplearning4j.ui.stats.StatsListener;
+import org.deeplearning4j.ui.storage.FileStatsStorage;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
@@ -42,16 +45,18 @@ public class God {
     private final String metaDataFileName = "traffic-signs.csv";
     private final String separator = ",";
     private final String[] allowedExtensions = NativeImageLoader.ALLOWED_FORMATS;
-    private final int height = 170;
-    private final int width = 300;
+    private final int width = 700;
+    private final int height = width * 9 / 16;
     private final int channels = 3;
     private final int outputNum = 2;
     private final Sign signToFind = new Sign("B", "36");
-    private final double learningRate = 0.1;
-    private final int numHiddenNodes = 100;
-    private final int epochs = 10;
+    private final double learningRate = 0.0001;
+    private final int numHiddenNodes = 50;
+    private final int epochs = 30;
     private final int cropImageVertical = (int) (width * .1);
     private final int cropImageHorizontal = (int) (height * .1);
+    private final int batchSize = 128;
+    private final int iterations = 10;
 
     public static void main(String[] args) throws Exception {
         final God god = new God();
@@ -106,7 +111,7 @@ public class God {
         BalancedPathFilter pathFilter = new BalancedPathFilter(new Random(1337), allowedExtensions, labelMaker);
 
         //Split the image files into train and test. Specify the train test split as 80%,20%
-        InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter, 80, 20);
+        InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter, 50,50);
         InputSplit trainData = filesInDirSplit[0];
         InputSplit testData = filesInDirSplit[1];
 
@@ -126,7 +131,7 @@ public class God {
         // Neural net
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(1337)
-                .iterations(1)
+                .iterations(iterations)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .learningRate(learningRate)
                 .updater(Updater.NESTEROVS).momentum(0.9)
@@ -145,7 +150,7 @@ public class God {
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-        model.setListeners(new ScoreIterationListener(10));  //Print score every 10 parameter updates
+//        model.setListeners(new ScoreIterationListener(10));  //Print score every 10 parameter updates
 
 //        ImageTransform transform2 = new MultiImageTransform(new Random(1337),
 //            new CropImageTransform(10), new FlipImageTransform(),
@@ -153,28 +158,42 @@ public class God {
 
         final ImageTransform[] transformations = new ImageTransform[] {
                 // no transformation
-                new ShowImageTransform("Display - before "),
-                // crop top
-                new CropImageTransform(new Random(1337), cropImageVertical, 0, 0, 0),
-                // crop left
-                new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, 0),
-                // crop bottom
-                new CropImageTransform(new Random(1337), 0, 0, cropImageVertical, 0),
-                // crop right
-                new CropImageTransform(new Random(1337), 0, 0, 0, cropImageHorizontal),
-                // crop vertical
-                new CropImageTransform(new Random(1337), cropImageVertical, 0, cropImageVertical, 0),
-                // crop horizontal
-                new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, cropImageHorizontal),
-                // crop all
-                new CropImageTransform(new Random(1337), cropImageVertical, cropImageHorizontal, cropImageVertical, cropImageHorizontal),
-                // flip over Y-axis
-                new FlipImageTransform(1)
+                new ShowImageTransform("Display - before ")
+//                ,
+//                // crop top
+//                new CropImageTransform(new Random(1337), cropImageVertical, 0, 0, 0),
+//                // crop left
+//                new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, 0),
+//                // crop bottom
+//                new CropImageTransform(new Random(1337), 0, 0, cropImageVertical, 0),
+//                // crop right
+//                new CropImageTransform(new Random(1337), 0, 0, 0, cropImageHorizontal),
+//                // crop vertical
+//                new CropImageTransform(new Random(1337), cropImageVertical, 0, cropImageVertical, 0),
+//                // crop horizontal
+//                new CropImageTransform(new Random(1337), 0, cropImageHorizontal, 0, cropImageHorizontal),
+//                // crop all
+//                new CropImageTransform(new Random(1337), cropImageVertical, cropImageHorizontal, cropImageVertical, cropImageHorizontal),
+//                // flip over Y-axis
+//                new FlipImageTransform(1)
         };
+
+        UIServer uiServer = UIServer.getInstance();
+
+        //Configure where the network information (gradients, activations, score vs. time etc) is to be stored
+        //Then add the StatsListener to collect this information from the network, as it trains
+//        StatsStorage statsStorage = new InMemoryStatsStorage();             //Alternative: new FileStatsStorage(File) - see UIStorageExample
+        final File ui = new File(pathToData + "\\" + "ui.bin");
+        ui.delete();
+        StatsStorage statsStorage = new FileStatsStorage(ui);             //Alternative: new FileStatsStorage(File) - see UIStorageExample
+        model.setListeners(new StatsListener(statsStorage));
+
+        //Attach the StatsStorage instance to the UI: this allows the contents of the StatsStorage to be visualized
+        uiServer.attach(statsStorage);
 
         for (ImageTransform transform: transformations) {
             recordReader.initialize(trainData, transform);
-            DataSetIterator trainIter = new RecordReaderDataSetIterator(recordReader, 10, 1, outputNum);
+            DataSetIterator trainIter = new RecordReaderDataSetIterator(recordReader, batchSize, 1, outputNum);
 
             for (int n = 0; n < epochs; n++) {
                 model.fit(trainIter);
@@ -186,7 +205,7 @@ public class God {
         Evaluation eval = new Evaluation(outputNum);
         for (ImageTransform transform: transformations) {
             recordReader.initialize(testData, transform);
-            DataSetIterator testIter = new RecordReaderDataSetIterator(recordReader, 10, 1, outputNum);
+            DataSetIterator testIter = new RecordReaderDataSetIterator(recordReader, batchSize, 1, outputNum);
 
             while (testIter.hasNext()) {
                 DataSet t = testIter.next();
@@ -221,7 +240,8 @@ public class God {
             }
             checkArgument(sign.length() >= 2, "Sign = " + sign);
             final String type = sign.charAt(0) + "";
-            if (sign.contains(";")) {
+            if (sign.startsWith("B33") || sign.startsWith("B43") ||
+                    sign.startsWith("b33") || sign.startsWith("b43")) {
 
                 // B33
                 final String[] secondPart = sign.substring(1).split(";");
